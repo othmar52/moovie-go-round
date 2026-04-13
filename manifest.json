@@ -1,11 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Film-Tab Glücksrad Fullscreen",
-  "version": "3.1",
+  "name": "Movie Go Round - Movie Wheel",
+  "version": "3.2",
   "permissions": ["tabs", "scripting"],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "optional_host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
@@ -20,5 +18,9 @@
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   }
 }
