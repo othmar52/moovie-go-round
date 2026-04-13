@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Film-Tab Glücksrad</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="dark-theme">
+    <div class="layout">
+      <div class="sidebar">
+        <div class="header">
+          <h3>Film-Auswahl</h3>
+          <button
+            id="copyBtn"
+            class="icon-btn"
+            title="In Zwischenablage kopieren"
+          >
+            📋 Kopieren
+          </button>
+        </div>
+
+        <p id="status" class="status-text">Suche läuft...</p>
+
+        <div id="movieList" class="scroll-list">
+          <p class="loading">Filme werden aus Tabs extrahiert...</p>
+        </div>
+
+        <div class="manual-entry-area">
+          <textarea
+            id="manualInput"
+            placeholder="Weitere Filme hier eingeben (eine Zeile pro Film)..."
+          ></textarea>
+          <button id="addManualBtn" class="secondary-btn">Hinzufügen</button>
+        </div>
+
+        <div class="settings-area">
+          <div class="slider-group">
+            <label for="maxItemsSlider"
+              >Max. Segmente: <span id="maxItemsVal">30</span></label
+            >
+            <input
+              type="range"
+              id="maxItemsSlider"
+              min="2"
+              max="100"
+              value="30"
+            />
+          </div>
+          <div class="slider-group">
+            <label for="durationSlider"
+              >Drehzeit (Sek.): <span id="durationVal">20</span></label
+            >
+            <input
+              type="range"
+              id="durationSlider"
+              min="1"
+              max="60"
+              value="20"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="main-area">
+        <div class="wheel-layout">
+          <div class="wheel-wrapper">
+            <div class="pointer"></div>
+            <canvas id="wheel" width="900" height="900"></canvas>
+          </div>
+
+          <div class="side-controls">
+            <button id="spinBtn" class="spin-btn" disabled>HOLD<br/>&<br/>SPIN!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="winnerModal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h1 id="modalWinnerText">Filmname</h1>
+        <button id="focusTabBtn" class="primary-btn" style="display: none">
+          🎬 Zum Film-Tab wechseln
+        </button>
+        <button id="copyListBtn" class="secondary-btn">
+          📋 Liste kopieren
+        </button>
+        <button id="closeModalBtn" class="primary-btn">
+          Schließen & Neu drehen
+        </button>
+      </div>
+    </div>
+    <canvas
+      id="confettiCanvas"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 99999;
+        display: none;
+      "
+    ></canvas>
+    <script src="wheel.js"></script>
+  </body>
+</html>
