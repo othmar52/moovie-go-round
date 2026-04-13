@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Movie Go Round - Movie Wheel Einstellungen</title>
+    <title>Movie Go Round - Options</title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <div class="container">
-      <h2>⚙️ Berechtigte URLs verwalten</h2>
-      <p>
+      <h2 data-i18n="optionsTitle">⚙️ Berechtigte URLs verwalten</h2>
+      <p data-i18n="optionsDesc">
         Trage hier die URLs deiner Streaming-Dienste (Plex, Jellyfin, Moovy,
         etc.) ein, die vom Glücksrad gescannt werden dürfen.
       </p>
@@ -19,13 +19,14 @@
           id="urlInput"
           placeholder="https://plex.yourserver.com or http://128.168.1.45:8096"
         />
-        <button id="addBtn" class="primary-btn">Hinzufügen</button>
+        <button id="addBtn" class="primary-btn" data-i18n="addBtn">Hinzufügen</button>
       </div>
 
-      <h3>Aktuell berechtigte Seiten:</h3>
+      <h3 data-i18n="currentUrls">Aktuell berechtigte Seiten:</h3>
       <div id="urlList" class="url-list"></div>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="options.js"></script>
   </body>
 </html>

@@ -6,19 +6,17 @@ document.getElementById("addBtn").addEventListener("click", () => {
 
   if (!url) return;
 
-  // Formatiert die URL so, dass Unterseiten erlaubt sind (Das '/*' am Ende)
   if (!url.endsWith("/*")) {
     if (!url.endsWith("/")) url += "/";
     url += "*";
   }
 
-  // Fordert die Berechtigung vom Browser an (Das öffnet in Chrome ein kleines Pop-up für den Nutzer)
   chrome.permissions.request({ origins: [url] }, (granted) => {
     if (granted) {
       inputEl.value = "";
-      loadPermissions(); // Liste neu laden
+      loadPermissions(); 
     } else {
-      alert("Berechtigung wurde abgelehnt oder die URL ist ungültig.");
+      alert(t('permDenied')); // LOKALISIERT
     }
   });
 });
@@ -28,12 +26,11 @@ function loadPermissions() {
     const list = document.getElementById("urlList");
     list.innerHTML = "";
 
-    // Die Berechtigungen enthalten auch Standard-URLs, wir wollen nur die vom Nutzer hinzugefügten
     const origins = perms.origins || [];
 
     if (origins.length === 0) {
-      list.innerHTML =
-        '<p style="color: #888; font-size: 14px;">Noch keine URLs berechtigt.</p>';
+      // LOKALISIERT
+      list.innerHTML = `<p style="color: #888; font-size: 14px;">${t('noUrls')}</p>`;
       return;
     }
 
@@ -46,7 +43,7 @@ function loadPermissions() {
 
       const remBtn = document.createElement("button");
       remBtn.className = "remove-btn";
-      remBtn.innerText = "Entfernen";
+      remBtn.innerText = t('removeBtn'); // LOKALISIERT
       remBtn.onclick = () => {
         chrome.permissions.remove({ origins: [orig] }, (removed) => {
           if (removed) loadPermissions();

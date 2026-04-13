@@ -1,9 +1,8 @@
 let gefundeneFilme = [];
 let baseAuswahl = [];
 let wheelItems = [];
-let filmTabMap = {}; // Maps cleaned title -> tabId for tab-focus feature
+let filmTabMap = {};
 
-// Wheel base colors
 const wheelColors = [
   "#e03e36",
   "#2a82c4",
@@ -13,8 +12,6 @@ const wheelColors = [
   "#e57223",
   "#dddddd",
 ];
-
-// Lighter highlight variant for gradients (same order)
 const wheelColorsLight = [
   "#ff7b75",
   "#63b8ff",
@@ -26,7 +23,6 @@ const wheelColorsLight = [
 ];
 
 // --- AUDIO ---
-
 const tickAudio = new Audio("tick.wav");
 tickAudio.volume = 0.8;
 let lastTickTime = 0;
@@ -41,7 +37,6 @@ function playTick() {
 }
 
 // --- TITLE HELPERS ---
-
 function cleanMovieTitle(title) {
   const yearMatch = title.match(/\(\d{4}\)$/);
   const yearPart = yearMatch ? ` ${yearMatch[0]}` : "";
@@ -57,7 +52,6 @@ function stripYear(title) {
 }
 
 // --- WHEEL DATA UPDATE ---
-
 function updateWheelData() {
   const checkboxes = document.querySelectorAll("#movieList input:checked");
   baseAuswahl = Array.from(checkboxes).map((cb) => cb.value);
@@ -99,12 +93,12 @@ function updateWheelData() {
 }
 
 // --- LIST MANAGEMENT ---
-
 function addFilmsToList(filmeListe, tabIdMap = {}) {
   const listContainer = document.getElementById("movieList");
   if (
     listContainer.querySelector(".loading") ||
-    listContainer.innerText.includes("Keine Filme")
+    listContainer.innerText.includes(t("noTabsFound")) ||
+    listContainer.innerText.includes("Keine Filme") // Fallback
   ) {
     listContainer.innerHTML = "";
   }
@@ -120,11 +114,11 @@ function addFilmsToList(filmeListe, tabIdMap = {}) {
       const i = gefundeneFilme.length - 1;
       const tabId = filmTabMap[film];
 
-      // "Ansehen" button only shown for films with a known tab
+      // LOKALISIERT
       const watchBtn =
         tabId !== undefined
-          ? `<button class="watch-btn" title="Tab öffnen: ${film}" data-tabid="${tabId}">▶</button>`
-          : `<button class="watch-btn watch-btn--hidden" disabled title="Kein Tab bekannt">▶</button>`;
+          ? `<button class="watch-btn" title="${t("openTab")}${film}" data-tabid="${tabId}">▶</button>`
+          : `<button class="watch-btn watch-btn--hidden" disabled title="${t("noKnownTab")}">▶</button>`;
 
       const div = document.createElement("div");
       div.className = "movie-item";
@@ -137,7 +131,6 @@ function addFilmsToList(filmeListe, tabIdMap = {}) {
 
       div.querySelector("input").addEventListener("change", updateWheelData);
 
-      // Wire up watch button click
       const btn = div.querySelector(".watch-btn:not(.watch-btn--hidden)");
       if (btn) {
         btn.addEventListener("click", () => {
@@ -147,13 +140,13 @@ function addFilmsToList(filmeListe, tabIdMap = {}) {
     }
   });
 
+  // LOKALISIERT
   document.getElementById("status").innerText =
-    `${gefundeneFilme.length} Filme in der Liste.`;
+    `${gefundeneFilme.length}${t("moviesInList")}`;
   updateWheelData();
 }
 
 // --- INITIAL TAB SCAN ---
-
 document.addEventListener("DOMContentLoaded", async () => {
   const tabs = await chrome.tabs.query({});
   const initialFilms = [];
@@ -180,7 +173,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             return title;
           }
           // 2. Jellyfin / Emby
-          // 2. Jellyfin / Emby
           const activePage = Array.from(
             document.querySelectorAll("#itemDetailPage"),
           ).find((p) => !p.classList.contains("hide"));
@@ -188,7 +180,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             const jellyfinTitleElement = activePage.querySelector(
               ".nameContainer h1.itemName bdi",
             );
-            // Only proceed if this is a movie/show page (has a year in the misc info)
             const yearElement = activePage.querySelector(
               ".itemMiscInfo-primary .mediaInfoItem",
             );
@@ -218,14 +209,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (initialFilms.length > 0) {
     addFilmsToList(initialFilms, tabIdMap);
   } else {
+    // LOKALISIERT
     document.getElementById("movieList").innerHTML =
-      '<p style="padding: 15px;">Keine Film-Tabs gefunden. Füge sie manuell hinzu!</p>';
-    document.getElementById("status").innerText = "Bereit.";
+      `<p style="padding: 15px;">${t("noTabsFound")}</p>`;
+    document.getElementById("status").innerText = t("ready");
   }
 });
 
 // --- EVENT LISTENERS ---
-
 document.getElementById("maxItemsSlider").addEventListener("input", (e) => {
   document.getElementById("maxItemsVal").innerText = e.target.value;
   updateWheelData();
@@ -249,17 +240,17 @@ document.getElementById("addManualBtn").addEventListener("click", () => {
   }
 });
 
+// LOKALISIERT
 document.getElementById("copyBtn").addEventListener("click", () => {
   const checkboxes = document.querySelectorAll("#movieList input:checked");
   const selectedFilms = Array.from(checkboxes).map((cb) => cb.value);
   navigator.clipboard.writeText(selectedFilms.join("\n"));
   const btn = document.getElementById("copyBtn");
-  btn.innerText = "✅ Kopiert";
-  setTimeout(() => (btn.innerText = "📋 Kopieren"), 2000);
+  btn.innerText = t("copied");
+  setTimeout(() => (btn.innerText = t("copyBtn")), 2000);
 });
 
 // --- DRAW WHEEL ---
-
 function drawWheel() {
   const canvas = document.getElementById("wheel");
   const ctx = canvas.getContext("2d");
@@ -272,7 +263,6 @@ function drawWheel() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 1. Outer glow/shadow ring
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.55)";
   ctx.shadowBlur = 32;
@@ -282,7 +272,6 @@ function drawWheel() {
   ctx.fill();
   ctx.restore();
 
-  // 2. Colored segments with radial gradient
   wheelItems.forEach((film, i) => {
     const baseIndex = i % baseAuswahl.length;
     const colorDark = wheelColors[baseIndex % wheelColors.length];
@@ -313,7 +302,6 @@ function drawWheel() {
     ctx.stroke();
   });
 
-  // 3. Gold outer ring
   const goldGrad = ctx.createLinearGradient(
     centerX - radius,
     centerY - radius,
@@ -331,7 +319,6 @@ function drawWheel() {
   ctx.lineWidth = 10;
   ctx.stroke();
 
-  // 4. Gloss overlay
   const glossGrad = ctx.createRadialGradient(
     centerX - radius * 0.3,
     centerY - radius * 0.35,
@@ -349,7 +336,6 @@ function drawWheel() {
   ctx.fillStyle = glossGrad;
   ctx.fill();
 
-  // 5. Inner donut with gold ring
   const innerGoldGrad = ctx.createLinearGradient(
     centerX - innerRadius,
     centerY - innerRadius,
@@ -380,7 +366,6 @@ function drawWheel() {
   ctx.fillStyle = centerGrad;
   ctx.fill();
 
-  // 6. Labels with drop shadow (year stripped, length capped dynamically)
   wheelItems.forEach((film, i) => {
     const baseIndex = i % baseAuswahl.length;
     const colorIndex = baseIndex % wheelColors.length;
@@ -412,7 +397,6 @@ function drawWheel() {
 }
 
 // --- LOCK CONTROLS ---
-
 function toggleControls(disable) {
   document
     .querySelectorAll("#movieList input")
@@ -425,7 +409,6 @@ function toggleControls(disable) {
 }
 
 // --- CONFETTI ---
-
 const CONFETTI_COLORS = [
   "#e03e36",
   "#2a82c4",
@@ -501,7 +484,6 @@ function launchConfetti() {
 }
 
 // --- SHOW WINNER MODAL ---
-
 function showWinnerModal(winner) {
   document.getElementById("modalWinnerText").innerText = "🎉 " + winner + " 🎉";
 
@@ -516,6 +498,7 @@ function showWinnerModal(winner) {
     focusBtn.style.display = "none";
   }
 
+  // LOKALISIERT
   document.getElementById("copyListBtn").onclick = () => {
     const checkboxes = document.querySelectorAll("#movieList input:checked");
     const lines = Array.from(checkboxes).map((cb) => {
@@ -526,15 +509,14 @@ function showWinnerModal(winner) {
     const date = `${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth() + 1).padStart(2, "0")}.${now.getFullYear()}`;
     navigator.clipboard.writeText(`${date}\n${lines.join("\n")}`);
     const btn = document.getElementById("copyListBtn");
-    btn.innerText = "✅ Copied!";
-    setTimeout(() => (btn.innerText = "📋 Copy List"), 2000);
+    btn.innerText = t("copied");
+    setTimeout(() => (btn.innerText = t("copyListBtn")), 2000);
   };
 
   document.getElementById("winnerModal").style.display = "flex";
 }
 
 // --- SPIN LOGIC ---
-
 let isSpinning = false;
 let spinStart = null;
 let accumulatedRotation = 0;
@@ -542,7 +524,6 @@ let animFrameId = null;
 
 const spinBtn = document.getElementById("spinBtn");
 
-// MOUSEDOWN – spin up
 spinBtn.addEventListener("mousedown", () => {
   if (isSpinning) return;
   isSpinning = true;
@@ -578,7 +559,6 @@ spinBtn.addEventListener("mousedown", () => {
   animFrameId = requestAnimationFrame(spinUp);
 });
 
-// MOUSEUP – spin down, then pause, then reveal
 spinBtn.addEventListener("mouseup", () => {
   if (!isSpinning) return;
   spinBtn.disabled = true;
@@ -595,13 +575,11 @@ spinBtn.addEventListener("mouseup", () => {
 
   const startRotation = accumulatedRotation;
   const start = performance.now();
-  
-  // HIER IST DER FIX: Wir berechnen ein garantiert ZUFÄLLIGES Ziel
-  // Wir drehen das Rad basierend auf der Slider-Zeit noch ein paar Mal komplett (z.B. 10x) 
-  // UND addieren einen komplett zufälligen Winkel zwischen 0 und 360 Grad (2*PI)
-  const extraSpins = Math.max(5, Math.floor(durationSecs * 0.8)); 
+
+  const extraSpins = Math.max(5, Math.floor(durationSecs * 0.8));
   const randomTargetAngle = Math.random() * 2 * Math.PI;
-  const targetRotation = startRotation + (extraSpins * 2 * Math.PI) + randomTargetAngle;
+  const targetRotation =
+    startRotation + extraSpins * 2 * Math.PI + randomTargetAngle;
 
   let lastTick = Math.floor((startRotation + sliceAngle / 2) / sliceAngle);
 
@@ -609,12 +587,10 @@ spinBtn.addEventListener("mouseup", () => {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
 
-    // Easing-Funktion: (easeOutQuart) sorgt für schnellen Start und seeehr langes Ausrollen
     const ease = 1 - Math.pow(1 - progress, 4);
-    
-    // Die aktuelle Rotation berechnet sich stur aus dem Fortschritt zum zufälligen Ziel
-    const currentRotation = startRotation + (targetRotation - startRotation) * ease;
-    
+    const currentRotation =
+      startRotation + (targetRotation - startRotation) * ease;
+
     canvas.style.transform = `rotate(${currentRotation}rad)`;
 
     const currentTick = Math.floor(
@@ -655,13 +631,11 @@ spinBtn.addEventListener("mouseup", () => {
   animFrameId = requestAnimationFrame(spinDown);
 });
 
-// Catch mouseup outside button
 document.addEventListener("mouseup", () => {
   if (isSpinning) spinBtn.dispatchEvent(new Event("mouseup"));
 });
 
 // --- MODAL CLOSE ---
-
 function closeModal() {
   document.getElementById("winnerModal").style.display = "none";
 }
